@@ -205,8 +205,11 @@ esac
 
 # make sure the patch file path exists
 file_to_update_just_child_path=$(dirname "${file_to_update_child_path}")
-if [ ! -d "${patch_path}/${file_to_update_just_child_path}" ]; then
-    mkdir -p "${patch_path}/${file_to_update_just_child_path}"
+patch_target_path="${patch_path}/${file_to_update_just_child_path}"
+if [ ! -d "${patch_target_path}" ]; then
+    console_output_nobreak "INFO" "the target patch path ${patch_target_path} does not exist, creating it now ... "
+    mkdir -p "${patch_target_path}"
+    console_output "INFO" "ok"
 fi
 
 # copy the file to the patch path
