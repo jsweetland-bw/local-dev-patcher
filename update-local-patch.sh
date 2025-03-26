@@ -53,24 +53,6 @@ function import_source() {
     fi
 }
 
-# determine the script path
-script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# import functions
-import_source "${script_path}/utils.sh"
-import_source "${script_path}/default-values.sh"
-
-# set defaults if the vars are unset
-if [ "${dev_path}" = "" ]; then
-    dev_path=${default_dev_path}
-fi
-if [ "${patch_path_suffix}" = "" ]; then
-    patch_path_suffix=${default_patch_path_suffix}
-fi
-
-# output spacing
-echo
-
 # print the script usage
 function print_usage() {
     echo "Usage: ${0} -f file_to_update [-r repo_dirname] [-d dev_path] [-p patch_path] [-s patch_path_suffix]"
@@ -109,6 +91,24 @@ while getopts "r:f:d:p:s:h" opt; do
             ;;
     esac
 done
+
+# determine the script path
+script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# import functions
+import_source "${script_path}/utils.sh"
+import_source "${script_path}/default-values.sh"
+
+# set defaults if the vars are unset
+if [ "${dev_path}" = "" ]; then
+    dev_path=${default_dev_path}
+fi
+if [ "${patch_path_suffix}" = "" ]; then
+    patch_path_suffix=${default_patch_path_suffix}
+fi
+
+# output spacing
+echo
 
 # handle missing required parameters
 if [ "${file_to_update}" = "" ]; then
