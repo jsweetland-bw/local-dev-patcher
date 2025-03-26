@@ -108,17 +108,17 @@ if [ "${patch_path_suffix}" = "" ]; then
 fi
 
 # output spacing
-echo
+console_output "INFO" ""
 
 # handle missing required parameters
 if [ "${file_to_update}" = "" ]; then
-    echo "ERROR: no file specified, run with -h for more information" > /dev/stderr
+    console_output "ERROR" "no file specified, run with -h for more information"
     exit 1
 fi
 
 # make sure the specified file exists
 if [ ! -f "${file_to_update}" ]; then
-    echo "ERROR: file not found: ${file_to_update}" > /dev/stderr
+    console_output "ERROR" "file not found: ${file_to_update}"
     exit 1
 fi
 
@@ -128,77 +128,77 @@ if [ "${repo_dirname}" != "" ]; then
     repo_path="${dev_path}/${repo_dirname}"
 else
     # otherwise, use the current path to determine the repo
-    echo -n "repo_dirname was not specified with -r, using the current path to determine the repo ... "
+    console_output_nobreak "INFO" "repo_dirname was not specified with -r, using the current path to determine the repo ... "
 
     current_path="$(pwd)"
     dev_subpath=$(echo "${current_path}" | sed "s|${HOME}/Dev/||")
 
     if [ "${dev_subpath}" = "${current_path}" ]; then
         # the current path is not in the dev path
-        echo "ERROR"
-        echo "ERROR: repo_dirname was not specified and the current path is not within the dev path (dev_path: ${dev_path})" > /dev/stderr
+        console_output "INFO" "ERROR"
+        console_output "ERROR" "repo_dirname was not specified and the current path is not within the dev path (dev_path: ${dev_path})"
         exit 1
     fi
 
     repo_dirname=$(echo "${dev_subpath}" | cut -d "/" -f 1)
     repo_path="${dev_path}/${repo_dirname}"
 
-    echo "ok"
+    console_output "INFO" "ok"
 
     # output spacing
-    echo
+    console_output "INFO" ""
 fi
 
 # announce the repo name and path
-print_var repo_dirname
-print_var repo_path
+console_output "INFO" $(print_var repo_dirname)
+console_output "INFO" $(print_var repo_path)
 
 # calculate and announce the patch path
 if [ "${patch_path}" = "" ]; then
     patch_path=${repo_path}${patch_path_suffix}
 fi
-print_var patch_path
+console_output "INFO" $(print_var patch_path)
 
 # output spacing
-echo
+console_output "INFO" ""
 
 # verify the paths exist
-echo -n "checking paths ... "
+console_output_nobreak "INFO" "checking paths ... "
 
 check_path "${repo_path}"
 check_path "${patch_path}"
 
-echo "ok"
+console_output "INFO" "ok"
 
 # output spacing
-echo
+console_output "INFO" ""
 
 # determine the child path for the file to update
 file_to_update_full_path=$(realpath "${file_to_update}")
 file_to_update_child_path=$(echo "${file_to_update_full_path}" | sed "s|${repo_path}/||")
-print_var file_to_update_child_path
+console_output "INFO" $(print_var file_to_update_child_path)
 
 # output spacing
-echo
+console_output "INFO" ""
 
 # calculate md5sums
 file_to_update_md5sum=$(calc_md5sum "${file_to_update_full_path}")
 patch_file_md5sum=$(calc_md5sum "${patch_path}/${file_to_update_child_path}")
 
 # announce the proposed update
-echo "proposed update:"
-echo "  from: ${file_to_update_md5sum} ${file_to_update_full_path}"
-echo "    to: ${patch_file_md5sum} ${patch_path}/${file_to_update_child_path}"
+console_output "PRIORITY" "proposed update:"
+console_output "PRIORITY" "  from: ${file_to_update_md5sum} ${file_to_update_full_path}"
+console_output "PRIORITY" "    to: ${patch_file_md5sum} ${patch_path}/${file_to_update_child_path}"
 
 # output spacing
-echo
+console_output "INFO"
 
 # prompt for the user to proceed with the updating the patch file
 read -p "continue (y/N)? " choice
 case "$choice" in 
-  y|Y ) echo
+  y|Y ) console_output "PRIORITY" ""
         ;;
-  * )   echo "aborting, nothing will be updated"
+  * )   console_output "PRIORITY" "aborting, nothing will be updated"
         exit 0
         ;;
 esac
@@ -210,13 +210,15 @@ if [ ! -d "${patch_path}/${file_to_update_just_child_path}" ]; then
 fi
 
 # copy the file to the patch path
-echo -n "copying "
-cp -v ${file_to_update_full_path} ${patch_path}/${file_to_update_child_path}
+console_output_nobreak "PRIORITY" "copying "
+if [ ${quiet_output} -eq 0 ]; then
+    cp -v ${file_to_update_full_path} ${patch_path}/${file_to_update_child_path}
+else
+    console_output "PRIORITY" "..."
+fi
 
-# output spacing
-echo
-
-echo "updated"
+console_output "PRIORITY"
+console_output "PRIORITY" "updated"
 
 # exit normally
 exit 0

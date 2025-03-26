@@ -74,13 +74,13 @@ function list_file() {
     local -r patch_md5="${2}"
     local -r repo_md5="${3}"
 
-    echo -n "  "
+    console_output_nobreak "PRIORITY" "  "
     if [ "${patch_md5}" != "${repo_md5}" ]; then
-        echo -n "!"
+        console_output_nobreak "PRIORITY" "!"
     else
-        echo -n " "
+        console_output_nobreak "PRIORITY" " "
     fi
-    echo " ${relative_file}"
+    console_output "PRIORITY" " ${relative_file}"
 }
 
 # prompt to continue
@@ -111,7 +111,12 @@ function patch_file() {
     if [ "${patch_md5}" = "${repo_md5}" ]; then
         file_skip_list="${relative_file} ${file_skip_list}"
     else
-        cp -v ${patch_file} ${repo_file}
+        if [ ${quiet_output} -eq 0 ]; then
+            cp -v ${patch_file} ${repo_file}
+        else
+            cp ${patch_file} ${repo_file}
+        fi
+
         ((files_updated++))
     fi
 }
@@ -169,7 +174,7 @@ if [ "${patch_path_suffix}" = "" ]; then
 fi
 
 # output spacing
-echo
+console_output "INFO" ""
 
 # determine the announce the repo name and path
 if [ "${repo_dirname}" != "" ]; then
@@ -177,42 +182,42 @@ if [ "${repo_dirname}" != "" ]; then
     repo_path="${dev_path}/${repo_dirname}"
 else
     # otherwise, use the current path to determine the repo
-    echo -n "repo_dirname was not specified with -r, using the current path to determine the repo ... "
+    console_output_nobreak "INFO" "repo_dirname was not specified with -r, using the current path to determine the repo ... "
 
     current_path="$(pwd)"
     dev_subpath=$(echo "${current_path}" | sed "s|${HOME}/Dev/||")
 
     if [ "${dev_subpath}" = "${current_path}" ]; then
         # the current path is not in the dev path
-        echo "ERROR"
-        echo "ERROR: repo_dirname was not specified and the current path is not within the dev path (dev_path: ${dev_path})" > /dev/stderr
+        console_output "INFO" "ERROR"
+        console_output "ERROR" "repo_dirname was not specified and the current path is not within the dev path (dev_path: ${dev_path})"
         exit 1
     fi
 
     repo_dirname=$(echo "${dev_subpath}" | cut -d "/" -f 1)
     repo_path="${dev_path}/${repo_dirname}"
 
-    echo "ok"
+    console_output "INFO" "ok"
 
     # output spacing
-    echo
+    console_output "INFO" ""
 fi
 
 # announce the repo directory name and path
-print_var repo_dirname
-print_var repo_path
+console_output "INFO" $(print_var repo_dirname)
+console_output "INFO" $(print_var repo_path)
 
 # calculate and announce the patch path
 if [ "${patch_path}" = "" ]; then
     patch_path=${repo_path}${patch_path_suffix}
 fi
-print_var patch_path
+console_output "INFO" $(print_var patch_path)
 
 # output spacing
-echo
+console_output "INFO" ""
 
 # verify the paths exist
-echo -n "checking paths ... "
+console_output_nobreak "INFO" "checking paths ... "
 
 check_path "${repo_path}"
 check_path "${patch_path}"
@@ -221,15 +226,15 @@ if [ "${file_to_patch}" != "" ]; then
     check_file "${file_to_patch}"
 fi
 
-echo "ok"
+console_output "INFO" "ok"
 
 # output spacing
-echo
+console_output "INFO" ""
 
 # indentify and announce the files to patch
 files_updated=0
 file_skip_list=""
-echo "files to be copied to the repo:"
+console_output "PRIORITY" "files to be copied to the repo:"
 if [ "${file_to_patch}" != "" ]; then
     path_to_file=$(realpath "${file_to_patch}")
     relative_file=$(calc_relative_file "${path_to_file}" "${patch_path}" "${repo_path}")
@@ -244,7 +249,7 @@ if [ "${file_to_patch}" != "" ]; then
     continue_prompt
 
     # copy the files to the repo
-    echo "copying files ..."
+    console_output "PRIORITY" "copying files ..."
     patch_file "${relative_file}" "${patch_file}" "${repo_file}"
 else
     for patch_file in $(find_files "${patch_path}"); do
@@ -260,7 +265,7 @@ else
     continue_prompt
 
     # copy the files to the repo
-    echo "copying files ..."
+    console_output "PRIORITY" "copying files ..."
     for patch_file in $(find_files "${patch_path}"); do
         relative_file=$(calc_relative_file "${patch_file}" "${patch_path}" "${repo_path}")
         repo_file="${repo_path}/${relative_file}"
@@ -271,19 +276,19 @@ fi
 
 # announce the files that were skipped
 if [ "${file_skip_list}" != "" ]; then
-    echo
-    echo "the folllowing files were skipped because they were already up to date:"
+    console_output "INFO" ""
+    console_output "INFO" "the folllowing files were skipped because they were already up to date:"
     for skipped_file in $(echo "${file_skip_list}"); do
-        echo "  ${skipped_file}"
+        console_output "INFO" "  ${skipped_file}"
     done
 fi
 
 # announce the results of the patch
-echo
+console_output "PRIORITY" ""
 if [ ${files_updated} -eq 0 ]; then
-    echo "no files updated"
+    console_output "PRIORITY" "no files updated"
 else
-    echo "${files_updated} file(s) updated"
+    console_output "PRIORITY" "${files_updated} file(s) updated"
 fi
 
 # exit normally
