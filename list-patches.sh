@@ -96,8 +96,10 @@ script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 import_source "${script_path}/utils.sh"
 import_source "${script_path}/default-values.sh"
 
-# set defaults
-dev_path=${default_dev_path}
+# set defaults for unset values
+if [ "${dev_path}" = "" ]; then
+    dev_path=${default_dev_path}
+fi
 
 # output spacing
 console_output "INFO" ""

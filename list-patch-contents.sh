@@ -68,17 +68,6 @@ function print_usage() {
     echo "Example: ${0} -r insights-alerting"
 }
 
-# determine the script path
-script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# import functions
-import_source "${script_path}/utils.sh"
-import_source "${script_path}/default-values.sh"
-
-# set defaults
-dev_path=${default_dev_path}
-patch_path_suffix=${default_patch_path_suffix}
-
 # parse command line parameters
 while getopts "r:d:s:qh" opt; do
     case ${opt} in
@@ -99,6 +88,21 @@ while getopts "r:d:s:qh" opt; do
             ;;
     esac
 done
+
+# determine the script path
+script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# import functions
+import_source "${script_path}/utils.sh"
+import_source "${script_path}/default-values.sh"
+
+# set defaults
+if [ "${dev_path}" = "" ]; then
+    dev_path=${default_dev_path}
+fi
+if [ "${patch_path_suffix}" = "" ]; then
+    patch_path_suffix=${default_patch_path_suffix}
+fi
 
 # output spacing
 console_output "INFO" ""
