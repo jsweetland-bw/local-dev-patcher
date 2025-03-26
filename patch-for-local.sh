@@ -1,7 +1,57 @@
-#!/bin/bash
+#!/bin/bash# set default output verbosity
+export quiet_output=0
 
-# determine the script path
-script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# write console output without a newline
+# 1: the type of output
+#   PRIORITY
+#   INFO
+#   ERROR
+# 2: the string to print
+function console_output_nobreak() {
+    local -r output_type="${1}"
+    local -r output_string="${2}"
+
+    if [ "${output_type}" = "PRIORITY" ]; then
+        echo -ne "${output_string}" > /dev/stdout
+    elif [ "${output_type}" = "INFO" ]; then
+        if [ ${quiet_output} -eq 0 ]; then
+            echo -ne "${output_string}" > /dev/stdout
+        fi
+    elif [ "${output_type}" = "ERROR" ]; then
+        echo -ne "ERROR: ${output_string}" > /dev/stderr
+    else
+        echo -ne "${output_string}" > /dev/stdout
+    fi
+}
+
+# write console output with a newline
+# 1: the type of output
+#   PRIORITY
+#   INFO
+#   ERROR
+# 2: the string to print
+function console_output() {
+    local -r output_type="${1}"
+    local -r output_string="${2}"
+
+    console_output_nobreak "${output_type}" "${output_string}\n"
+}
+
+# import a source file
+function import_source() {
+    local -r import_path="${1}"
+    shift
+    
+    console_output_nobreak "INFO" "importing ${import_path} ... "
+    if [ ! -f "${import_path}" ]; then
+        console_output "INFO" "ERROR"
+        console_output "ERROR" "file not found: ${import_path}"
+        exit 1
+    else
+        source ${import_path}
+        console_output "INFO" "ok"
+    fi
+}
 
 # determine the relative file name for a file
 # 1: the file to patch
@@ -66,33 +116,6 @@ function patch_file() {
     fi
 }
 
-# import a source file
-function import_source() {
-    local -r import_path="${1}"
-    shift
-    
-    echo -n "importing ${import_path} ... "
-    if [ ! -f "${import_path}" ]; then
-        echo "ERROR"
-        echo "ERROR: file not found: ${import_path}" > /dev/stderr
-        exit 1
-    else
-        source ${import_path}
-        echo "ok"
-    fi
-}
-
-# import functions
-import_source "${script_path}/utils.sh"
-import_source "${script_path}/default-values.sh"
-
-# set defaults
-dev_path=${default_dev_path}
-patch_path_suffix=${default_patch_path_suffix}
-
-# output spacing
-echo
-
 # print the script usage
 function print_usage() {
     echo "Usage: ${0} [-r repo_dirname] [-f file_to_patch] [-d dev_path] [-p patch_path] [-s patch_path_suffix]"
@@ -129,6 +152,24 @@ while getopts "r:f:d:p:s:h" opt; do
             ;;
     esac
 done
+
+# determine the script path
+script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# import functions
+import_source "${script_path}/utils.sh"
+import_source "${script_path}/default-values.sh"
+
+# set defaults if the vars are unset
+if [ "${dev_path}" = "" ]; then
+    dev_path=${default_dev_path}
+fi
+if [ "${patch_path_suffix}" = "" ]; then
+    patch_path_suffix=${default_patch_path_suffix}
+fi
+
+# output spacing
+echo
 
 # determine the announce the repo name and path
 if [ "${repo_dirname}" != "" ]; then
