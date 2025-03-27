@@ -34,9 +34,10 @@ Each of the scripts in this package accept these shared parameters, all of which
 - `-d dev_path`: Sets the path to the dev directory to the value of `dev_path`. If this option is omitted, the default value will be used as described above.
 - `-p patch_path`: Sets the path to the patch files to the value of `patch_path`. If this options is omitted, the calculated value will be used as described above.
 - `-s patch_path_suffix`: Sets the suffix to append to the repo path when calculating the patch path to the value of `patch_path_suffix`. If this option is omitted, the default value will be used as described above.
+- `-q`: quiet output, show fewer messages
 - `-h`: Prints the help message.
 
-## How to Update a Patch File
+## How to Update a Patch File - update-local-patch.sh
 
 Run the `update-local-patch.sh -f file_to_update` script to update the patch file specified by `file_to_update`. The `-f file_to_update` parameter is required.
 
@@ -44,13 +45,36 @@ Run the `update-local-patch.sh -f file_to_update` script to update the patch fil
 
 - `-f file_to_update`: Sets the name of the file to update to the value of `file_to_update`.
 
-## How to Apply a Patch
+### Optional Parameters
 
-Run the `patch-for-local.sh` script to apply a patch to a repository. This script does not take any parameters other than the shared parameters.
+- `-r repo_dirname` (shared)
+- `-d dev_path` (shared)
+- `-p patch_path` (shared)
+- `-s patch_path_suffix`  (shared)
+- `-q` (shared)
+- `-h` (shared)
 
 ### General Flow
 
-The following is the generalized flow the script follows:
+1. Determine the name of the repository if one is not specified.
+2. Determine the full paths for both the repository and the patch files.
+3. Prompt for whether to continue or abort.
+4. If continuing, create the target path if it does not already exist in the patch path, then copy the specified file from the repo path into the patch path.
+
+## How to Apply a Patch - patch-for-local.sh
+
+Run the `patch-for-local.sh` script to apply a patch to a repository. This script does not require any parameters.
+
+### Optional Parameters
+
+- `-r repo_dirname` (shared)
+- `-d dev_path` (shared)
+- `-p patch_path` (shared)
+- `-s patch_path_suffix`  (shared)
+- `-q` (shared)
+- `-h` (shared)
+
+### General Flow
 
 1. Determine the name of the repository if one is not specified.
 2. Determine the full paths for both the repository and the patch files.
@@ -58,3 +82,39 @@ The following is the generalized flow the script follows:
 4. Prompt for whether to continue or abort.
 5. If continuing, copy the files from the patch path into the repo path, skipping any files for which the md5sum of the patch file matches the md5sum of the repo file.
 6. Print lists of the copied and skipped files.
+
+## List the Patches for a Repository - list-patches.sh
+
+Run the `list-patches.sh` script to list the patches available for a specific repository. This script does not require any parameters.
+
+### Optional Parameters
+
+- `-r repo_dirname` (shared)
+- `-d dev_path` (shared)
+- `-s patch_path_suffix`  (shared)
+- `-q` (shared)
+- `-h` (shared)
+
+### General Flow
+
+1. Determine the name of the repository if one is not specified.
+2. Determine the full path for the repository.
+3. Find and list the directories contained in the dev path named with the name of the repo path and appended with an additional string.
+
+## List the Files for a Patch - list-patch-files.sh
+
+Run the `list-patch-files.sh` script to list the files present in a given patch for a repository. This script does not require any parameters.
+
+### Optional Parameters
+
+- `-r repo_dirname` (shared)
+- `-d dev_path` (shared)
+- `-s patch_path_suffix`  (shared)
+- `-q` (shared)
+- `-h` (shared)
+
+### General Flow
+
+1. Determine the name of the repository if one is not specified.
+2. Determine the full paths for both the repository and the patch files.
+3. Find and list the files contained in the patch path.

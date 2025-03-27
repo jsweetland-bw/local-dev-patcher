@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# determine the script path
-script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# set default output verbosity
+export quiet_output=0
 
 # determine the relative file name for a file
 # 1: the file to patch
@@ -24,26 +24,13 @@ function list_file() {
     local -r patch_md5="${2}"
     local -r repo_md5="${3}"
 
-    echo -n "  "
+    console_output_nobreak "PRIORITY" "  "
     if [ "${patch_md5}" != "${repo_md5}" ]; then
-        echo -n "!"
+        console_output_nobreak "PRIORITY" "!"
     else
-        echo -n " "
+        console_output_nobreak "PRIORITY" " "
     fi
-    echo " ${relative_file}"
-}
-
-# prompt to continue
-function continue_prompt() {
-    echo
-    read -p "continue (y/N)? " choice
-    case "$choice" in 
-    y|Y ) echo
-            ;;
-    * )   echo "aborting, nothing will be copied"
-            exit 0
-            ;;
-    esac
+    console_output "PRIORITY" " ${relative_file}"
 }
 
 # patch a file
@@ -61,41 +48,19 @@ function patch_file() {
     if [ "${patch_md5}" = "${repo_md5}" ]; then
         file_skip_list="${relative_file} ${file_skip_list}"
     else
-        cp -v ${patch_file} ${repo_file}
+        if [ ${quiet_output} -eq 0 ]; then
+            cp -v ${patch_file} ${repo_file}
+        else
+            cp ${patch_file} ${repo_file}
+        fi
+
         ((files_updated++))
     fi
 }
 
-# import a source file
-function import_source() {
-    local -r import_path="${1}"
-    shift
-    
-    echo -n "importing ${import_path} ... "
-    if [ ! -f "${import_path}" ]; then
-        echo "ERROR"
-        echo "ERROR: file not found: ${import_path}" > /dev/stderr
-        exit 1
-    else
-        source ${import_path}
-        echo "ok"
-    fi
-}
-
-# import functions
-import_source "${script_path}/utils.sh"
-import_source "${script_path}/default-values.sh"
-
-# set defaults
-dev_path=${default_dev_path}
-patch_path_suffix=${default_patch_path_suffix}
-
-# output spacing
-echo
-
 # print the script usage
 function print_usage() {
-    echo "Usage: ${0} [-r repo_dirname] [-f file_to_patch] [-d dev_path] [-p patch_path] [-s patch_path_suffix]"
+    echo "Usage: ${0} [-r repo_dirname] [-f file_to_patch] [-d dev_path] [-p patch_path] [-s patch_path_suffix] [-qh]"
     echo
     echo "Optional parameters:"
     echo "  -r repo_dirname: the name of the repo to patch; if omitted, the current path is used to determine the repo"
@@ -103,13 +68,14 @@ function print_usage() {
     echo "  -d dev_path: the path to the dev directory, defaults to ${default_dev_path}"
     echo "  -p patch_path: the path to the patch files, defaults to repo_path + patch_path_suffix"
     echo "  -s patch_path_suffix: the suffix to append to the repo path, defaults to ${default_patch_path_suffix}"
+    echo "  -q: quiet output, show fewer messages"
     echo "  -h: print this help message"
     echo
     echo "Example: ${0} -r insights-alerting"
 }
 
 # parse command line parameters
-while getopts "r:f:d:p:s:h" opt; do
+while getopts "r:f:d:p:s:qh" opt; do
     case ${opt} in
         r)  repo_dirname=${OPTARG}
             ;;
@@ -121,6 +87,8 @@ while getopts "r:f:d:p:s:h" opt; do
             ;;
         s)  patch_path_suffix=${OPTARG}
             ;;
+        q)  quiet_output=1
+            ;;
         h)  print_usage
             exit 0
             ;;
@@ -130,48 +98,69 @@ while getopts "r:f:d:p:s:h" opt; do
     esac
 done
 
+# determine the script path
+script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# import functions
+lib_path="${script_path}/lib"
+source "${lib_path}/import.sh"  # silently sourced because it contains the import_source function
+import_source "${lib_path}/console-output.sh" ${quiet_output}
+import_source "${lib_path}/file-operations.sh" ${quiet_output}
+import_source "${lib_path}/default-values.sh" ${quiet_output}
+
+# set defaults if the vars are unset
+if [ "${dev_path}" = "" ]; then
+    dev_path=${default_dev_path}
+fi
+if [ "${patch_path_suffix}" = "" ]; then
+    patch_path_suffix=${default_patch_path_suffix}
+fi
+
+# output spacing
+console_output "INFO" ""
+
 # determine the announce the repo name and path
 if [ "${repo_dirname}" != "" ]; then
     # if the repo name is specified, use it
     repo_path="${dev_path}/${repo_dirname}"
 else
     # otherwise, use the current path to determine the repo
-    echo -n "repo_dirname was not specified with -r, using the current path to determine the repo ... "
+    console_output_nobreak "INFO" "repo_dirname was not specified with -r, using the current path to determine the repo ... "
 
     current_path="$(pwd)"
     dev_subpath=$(echo "${current_path}" | sed "s|${HOME}/Dev/||")
 
     if [ "${dev_subpath}" = "${current_path}" ]; then
         # the current path is not in the dev path
-        echo "ERROR"
-        echo "ERROR: repo_dirname was not specified and the current path is not within the dev path (dev_path: ${dev_path})" > /dev/stderr
+        console_output "INFO" "ERROR"
+        console_output "ERROR" "repo_dirname was not specified and the current path is not within the dev path (dev_path: ${dev_path})"
         exit 1
     fi
 
     repo_dirname=$(echo "${dev_subpath}" | cut -d "/" -f 1)
     repo_path="${dev_path}/${repo_dirname}"
 
-    echo "ok"
+    console_output "INFO" "ok"
 
     # output spacing
-    echo
+    console_output "INFO" ""
 fi
 
 # announce the repo directory name and path
-print_var repo_dirname
-print_var repo_path
+console_output "INFO" "$(print_var repo_dirname)"
+console_output "INFO" "$(print_var repo_path)"
 
 # calculate and announce the patch path
 if [ "${patch_path}" = "" ]; then
     patch_path=${repo_path}${patch_path_suffix}
 fi
-print_var patch_path
+console_output "INFO" "$(print_var patch_path)"
 
 # output spacing
-echo
+console_output "INFO" ""
 
 # verify the paths exist
-echo -n "checking paths ... "
+console_output_nobreak "INFO" "checking paths ... "
 
 check_path "${repo_path}"
 check_path "${patch_path}"
@@ -180,15 +169,20 @@ if [ "${file_to_patch}" != "" ]; then
     check_file "${file_to_patch}"
 fi
 
-echo "ok"
+console_output "INFO" "ok"
 
 # output spacing
-echo
+console_output "INFO" ""
 
 # indentify and announce the files to patch
 files_updated=0
 file_skip_list=""
-echo "files to be copied to the repo:"
+
+continue_prompt_msg="continue"
+continue_abort_msg="nothing will be copied"
+
+console_output "PRIORITY" "files to be copied to the repo:"
+
 if [ "${file_to_patch}" != "" ]; then
     path_to_file=$(realpath "${file_to_patch}")
     relative_file=$(calc_relative_file "${path_to_file}" "${patch_path}" "${repo_path}")
@@ -200,10 +194,10 @@ if [ "${file_to_patch}" != "" ]; then
 
     list_file "${relative_file}" "${patch_md5}" "${repo_md5}"
 
-    continue_prompt
+    continue_prompt "${continue_prompt_msg}" "${continue_abort_msg}"
 
     # copy the files to the repo
-    echo "copying files ..."
+    console_output "PRIORITY" "copying files ..."
     patch_file "${relative_file}" "${patch_file}" "${repo_file}"
 else
     for patch_file in $(find_files "${patch_path}"); do
@@ -216,10 +210,10 @@ else
         list_file "${relative_file}" "${patch_md5}" "${repo_md5}"
     done
 
-    continue_prompt
+    continue_prompt "${continue_prompt_msg}" "${continue_abort_msg}"
 
     # copy the files to the repo
-    echo "copying files ..."
+    console_output "PRIORITY" "copying files ..."
     for patch_file in $(find_files "${patch_path}"); do
         relative_file=$(calc_relative_file "${patch_file}" "${patch_path}" "${repo_path}")
         repo_file="${repo_path}/${relative_file}"
@@ -230,19 +224,19 @@ fi
 
 # announce the files that were skipped
 if [ "${file_skip_list}" != "" ]; then
-    echo
-    echo "the folllowing files were skipped because they were already up to date:"
+    console_output "INFO" ""
+    console_output "INFO" "the folllowing files were skipped because they were already up to date:"
     for skipped_file in $(echo "${file_skip_list}"); do
-        echo "  ${skipped_file}"
+        console_output "INFO" "  ${skipped_file}"
     done
 fi
 
 # announce the results of the patch
-echo
+console_output "PRIORITY" ""
 if [ ${files_updated} -eq 0 ]; then
-    echo "no files updated"
+    console_output "PRIORITY" "no files updated"
 else
-    echo "${files_updated} file(s) updated"
+    console_output "PRIORITY" "${files_updated} file(s) updated"
 fi
 
 # exit normally
