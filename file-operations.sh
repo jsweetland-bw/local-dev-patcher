@@ -1,7 +1,4 @@
-# print a variable name and value
-function print_var() {
-    echo "${1}: ${!1}"
-}
+# file operations functions
 
 # find the files in a path
 function find_files() {

@@ -3,58 +3,6 @@
 # set default output verbosity
 export quiet_output=0
 
-# write console output without a newline
-# 1: the type of output
-#   PRIORITY
-#   INFO
-#   ERROR
-# 2: the string to print
-function console_output_nobreak() {
-    local -r output_type="${1}"
-    local -r output_string="${2}"
-
-    if [ "${output_type}" = "PRIORITY" ]; then
-        echo -ne "${output_string}" > /dev/stdout
-    elif [ "${output_type}" = "INFO" ]; then
-        if [ ${quiet_output} -eq 0 ]; then
-            echo -ne "${output_string}" > /dev/stdout
-        fi
-    elif [ "${output_type}" = "ERROR" ]; then
-        echo -ne "ERROR: ${output_string}" > /dev/stderr
-    else
-        echo -ne "${output_string}" > /dev/stdout
-    fi
-}
-
-# write console output with a newline
-# 1: the type of output
-#   PRIORITY
-#   INFO
-#   ERROR
-# 2: the string to print
-function console_output() {
-    local -r output_type="${1}"
-    local -r output_string="${2}"
-
-    console_output_nobreak "${output_type}" "${output_string}\n"
-}
-
-# import a source file
-function import_source() {
-    local -r import_path="${1}"
-    shift
-    
-    console_output_nobreak "INFO" "importing ${import_path} ... "
-    if [ ! -f "${import_path}" ]; then
-        console_output "INFO" "ERROR"
-        console_output "ERROR" "file not found: ${import_path}"
-        exit 1
-    else
-        source ${import_path}
-        console_output "INFO" "ok"
-    fi
-}
-
 # print the script usage
 function print_usage() {
     echo "Usage: ${0} [-r repo_dirname] [-d dev_path] [-s patch_path_suffix] [-qh]"
@@ -94,7 +42,9 @@ done
 script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # import functions
-import_source "${script_path}/utils.sh"
+source "${script_path}/import.sh"  # silently sourced because it contains the import_source function
+import_source "${script_path}/console-output.sh"
+import_source "${script_path}/file-operations.sh"
 import_source "${script_path}/default-values.sh"
 
 # set defaults
