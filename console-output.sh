@@ -56,7 +56,7 @@ function continue_prompt() {
     case "$choice" in 
     y|Y ) echo
             ;;
-    * )   echo "${abort_msg}"
+    * )   echo "aborting; ${abort_msg}"
             exit 0
             ;;
     esac

@@ -33,19 +33,6 @@ function list_file() {
     console_output "PRIORITY" " ${relative_file}"
 }
 
-# prompt to continue
-function continue_prompt() {
-    echo
-    read -p "continue (y/N)? " choice
-    case "$choice" in 
-    y|Y ) echo
-            ;;
-    * )   echo "aborting, nothing will be copied"
-            exit 0
-            ;;
-    esac
-}
-
 # patch a file
 # 1: the relative file
 # 2: the patch file
@@ -189,7 +176,12 @@ console_output "INFO" ""
 # indentify and announce the files to patch
 files_updated=0
 file_skip_list=""
+
+continue_prompt_msg="continue"
+continue_abort_msg="nothing will be copied"
+
 console_output "PRIORITY" "files to be copied to the repo:"
+
 if [ "${file_to_patch}" != "" ]; then
     path_to_file=$(realpath "${file_to_patch}")
     relative_file=$(calc_relative_file "${path_to_file}" "${patch_path}" "${repo_path}")
@@ -201,7 +193,7 @@ if [ "${file_to_patch}" != "" ]; then
 
     list_file "${relative_file}" "${patch_md5}" "${repo_md5}"
 
-    continue_prompt
+    continue_prompt "${continue_prompt_msg}" "${continue_abort_msg}"
 
     # copy the files to the repo
     console_output "PRIORITY" "copying files ..."
@@ -217,7 +209,7 @@ else
         list_file "${relative_file}" "${patch_md5}" "${repo_md5}"
     done
 
-    continue_prompt
+    continue_prompt "${continue_prompt_msg}" "${continue_abort_msg}"
 
     # copy the files to the repo
     console_output "PRIORITY" "copying files ..."

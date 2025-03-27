@@ -149,14 +149,7 @@ console_output "PRIORITY" "    to: ${patch_file_md5sum} ${patch_path}/${file_to_
 console_output "INFO"
 
 # prompt for the user to proceed with the updating the patch file
-read -p "continue (y/N)? " choice
-case "$choice" in 
-  y|Y ) console_output "PRIORITY" ""
-        ;;
-  * )   console_output "PRIORITY" "aborting, nothing will be updated"
-        exit 0
-        ;;
-esac
+continue_prompt "continue" "nothing will be updated"
 
 # make sure the patch file path exists
 file_to_update_just_child_path=$(dirname "${file_to_update_child_path}")
