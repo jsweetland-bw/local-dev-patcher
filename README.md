@@ -54,6 +54,13 @@ Run the `update-local-patch.sh -f file_to_update` script to update the patch fil
 - `-q` (shared)
 - `-h` (shared)
 
+### General Flow
+
+1. Determine the name of the repository if one is not specified.
+2. Determine the full paths for both the repository and the patch files.
+3. Prompt for whether to continue or abort.
+4. If continuing, create the target path if it does not already exist in the patch path, then copy the specified file from the repo path into the patch path.
+
 ## How to Apply a Patch - patch-for-local.sh
 
 Run the `patch-for-local.sh` script to apply a patch to a repository. This script does not require any parameters.
@@ -68,8 +75,6 @@ Run the `patch-for-local.sh` script to apply a patch to a repository. This scrip
 - `-h` (shared)
 
 ### General Flow
-
-The following is the generalized flow the script follows:
 
 1. Determine the name of the repository if one is not specified.
 2. Determine the full paths for both the repository and the patch files.
@@ -90,6 +95,12 @@ Run the `list-patches.sh` script to list the patches available for a specific re
 - `-q` (shared)
 - `-h` (shared)
 
+### General Flow
+
+1. Determine the name of the repository if one is not specified.
+2. Determine the full path for the repository.
+3. Find and list the directories contained in the dev path named with the name of the repo path and appended with an additional string.
+
 ## List the Files for a Patch - list-patch-files.sh
 
 Run the `list-patch-files.sh` script to list the files present in a given patch for a repository. This script does not require any parameters.
@@ -101,3 +112,9 @@ Run the `list-patch-files.sh` script to list the files present in a given patch 
 - `-s patch_path_suffix`  (shared)
 - `-q` (shared)
 - `-h` (shared)
+
+### General Flow
+
+1. Determine the name of the repository if one is not specified.
+2. Determine the full paths for both the repository and the patch files.
+3. Find and list the files contained in the patch path.
