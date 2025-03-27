@@ -63,6 +63,7 @@ function print_usage() {
     echo "  -r repo_dirname: the name of the repo to patch; if omitted, the current path is used to determine the repo"
     echo "  -d dev_path: the path to the dev directory, defaults to ${default_dev_path}"
     echo "  -s patch_path_suffix: the suffix to append to the repo path, defaults to ${default_patch_path_suffix}"
+    echo "  -q: quiet output, show fewer messages"
     echo "  -h: print this help message"
     echo
     echo "Example: ${0} -r insights-alerting"

@@ -55,7 +55,7 @@ function import_source() {
 
 # print the script usage
 function print_usage() {
-    echo "Usage: ${0} -f file_to_update [-r repo_dirname] [-d dev_path] [-p patch_path] [-s patch_path_suffix]"
+    echo "Usage: ${0} -f file_to_update [-r repo_dirname] [-d dev_path] [-p patch_path] [-s patch_path_suffix] [-qh]"
     echo
     echo "Required parameters:"
     echo "  -f file_to_update: the file to update"
@@ -65,6 +65,7 @@ function print_usage() {
     echo "  -d dev_path: the path to the dev directory, defaults to ${default_dev_path}"
     echo "  -p patch_path: the path to the patch files, defaults to repo_path + patch_path_suffix"
     echo "  -s patch_path_suffix: the suffix to append to the repo path, defaults to ${default_patch_path_suffix}"
+    echo "  -q: quiet output, show fewer messages"
     echo "  -h: print this help message"
     echo
     echo "Example: ${0} -r insights-alerting"
@@ -82,6 +83,8 @@ while getopts "r:f:d:p:s:h" opt; do
         p)  patch_dirname=${OPTARG}
             ;;
         s)  patch_path_suffix=${OPTARG}
+            ;;
+        q)  quiet_output=1
             ;;
         h)  print_usage
             exit 0

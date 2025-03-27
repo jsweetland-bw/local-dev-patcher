@@ -123,7 +123,7 @@ function patch_file() {
 
 # print the script usage
 function print_usage() {
-    echo "Usage: ${0} [-r repo_dirname] [-f file_to_patch] [-d dev_path] [-p patch_path] [-s patch_path_suffix]"
+    echo "Usage: ${0} [-r repo_dirname] [-f file_to_patch] [-d dev_path] [-p patch_path] [-s patch_path_suffix] [-qh]"
     echo
     echo "Optional parameters:"
     echo "  -r repo_dirname: the name of the repo to patch; if omitted, the current path is used to determine the repo"
@@ -131,13 +131,14 @@ function print_usage() {
     echo "  -d dev_path: the path to the dev directory, defaults to ${default_dev_path}"
     echo "  -p patch_path: the path to the patch files, defaults to repo_path + patch_path_suffix"
     echo "  -s patch_path_suffix: the suffix to append to the repo path, defaults to ${default_patch_path_suffix}"
+    echo "  -q: quiet output, show fewer messages"
     echo "  -h: print this help message"
     echo
     echo "Example: ${0} -r insights-alerting"
 }
 
 # parse command line parameters
-while getopts "r:f:d:p:s:h" opt; do
+while getopts "r:f:d:p:s:qh" opt; do
     case ${opt} in
         r)  repo_dirname=${OPTARG}
             ;;
@@ -148,6 +149,8 @@ while getopts "r:f:d:p:s:h" opt; do
         p)  patch_dirname=${OPTARG}
             ;;
         s)  patch_path_suffix=${OPTARG}
+            ;;
+        q)  quiet_output=1
             ;;
         h)  print_usage
             exit 0
