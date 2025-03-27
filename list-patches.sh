@@ -42,10 +42,11 @@ done
 script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # import functions
-source "${script_path}/import.sh"  # silently sourced because it contains the import_source function
-import_source "${script_path}/console-output.sh" ${quiet_output}
-import_source "${script_path}/file-operations.sh" ${quiet_output}
-import_source "${script_path}/default-values.sh" ${quiet_output}
+lib_path="${script_path}/lib"
+source "${lib_path}/import.sh"  # silently sourced because it contains the import_source function
+import_source "${lib_path}/console-output.sh" ${quiet_output}
+import_source "${lib_path}/file-operations.sh" ${quiet_output}
+import_source "${lib_path}/default-values.sh" ${quiet_output}
 
 # set defaults for unset values
 if [ "${dev_path}" = "" ]; then
