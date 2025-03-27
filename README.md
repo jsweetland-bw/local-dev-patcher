@@ -92,4 +92,12 @@ Run the `list-patches.sh` script to list the patches available for a specific re
 
 ## List the Files for a Patch - list-patch-files.sh
 
-Run the `list-patch-files.sh` script to list the files present in a given patch for a repository.
+Run the `list-patch-files.sh` script to list the files present in a given patch for a repository. This script does not require any parameters.
+
+### Optional Parameters
+
+- `-r repo_dirname` (shared)
+- `-d dev_path` (shared)
+- `-s patch_path_suffix`  (shared)
+- `-q` (shared)
+- `-h` (shared)
