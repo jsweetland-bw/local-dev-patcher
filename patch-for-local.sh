@@ -146,14 +146,14 @@ else
 fi
 
 # announce the repo directory name and path
-console_output "INFO" $(print_var repo_dirname)
-console_output "INFO" $(print_var repo_path)
+console_output "INFO" "$(print_var repo_dirname)"
+console_output "INFO" "$(print_var repo_path)"
 
 # calculate and announce the patch path
 if [ "${patch_path}" = "" ]; then
     patch_path=${repo_path}${patch_path_suffix}
 fi
-console_output "INFO" $(print_var patch_path)
+console_output "INFO" "$(print_var patch_path)"
 
 # output spacing
 console_output "INFO" ""
