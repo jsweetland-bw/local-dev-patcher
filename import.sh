@@ -7,7 +7,7 @@
 # 2: whether or not to print the import message
 function import_source() {
     local -r import_path="${1}"
-    local -r quiet_output="${2}"
+    local quiet_output="${2}"
     shift
 
     # make sure quiet_output is set
